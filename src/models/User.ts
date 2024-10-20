@@ -8,7 +8,7 @@ interface IUser extends Document {
   friendCount: ObjectId[];
 }
 
-const UserSchema = new Schema<IUser>({
+const userSchema = new Schema<IUser>({
   username: {
     type: String,
     required: true,
@@ -32,14 +32,17 @@ const UserSchema = new Schema<IUser>({
       type: Schema.Types.ObjectId,
       ref: "User",
     },
+    {
+      toJson: { virtuals: true },
+      Id: false,
+    },
   ],
 });
 
-UserSchema.virtual("friendCount").get(function (this: IUser) {
+userSchema.virtual("friendCount").get(function (this: IUser) {
   return this.friends.length;
 });
 
-
-const User = model<IUser>("User", UserSchema);
+const User = model<IUser>("User", userSchema);
 
 export default User;
