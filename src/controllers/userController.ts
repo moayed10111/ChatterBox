@@ -12,12 +12,18 @@ export const getAllUsers = async (_req: Request, res: Response) => {
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const userData = await User.findById(req.params.id).populate("thoughts").populate("friends");
+    const userData = await User.findById(req.params.id)
+      .populate("thoughts")
+      .populate("friends");
+    if (!userData) {
+        res.status(404).json({ message: "No user found with this id!" });
+        return;
+        }
     res.json(userData);
-  } catch (err) {
+    } catch (err) {
     res.status(400).json(err);
-  }
-};
+
+}};
 
 export const createUser = async (req: Request, res: Response) => {
   try {
@@ -30,45 +36,56 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const userData = await User.findByIdAndUpdate(req.params.id);
-    res.json(userData);
-    } catch (err) {
-    res.status(400).json(err);
+    const userData = await User.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    }).select("-__v");
+    if (!userData) {
+      res.status(404).json({ message: "No user found with this id!" });
+      return;
     }
-}
-
+    res.json(userData);
+  } catch (err) {
+    res.status(400).json(err);
+  }
+};
 
 export const deleteUser = async (req: Request, res: Response) => {
   try {
     const userData = await User.findByIdAndDelete(req.params.id);
-    res.json(userData);
-  } catch (err) {
+    if (!userData) {
+      res.status(404).json({ message: "No user found with this id!" });
+      return;
+    }
+    else {
+        res.json({userData, message: 'User deleted.'});
+        }
+    } catch (err) {
     res.status(400).json(err);
-  }
+    }
 };
-
 export const addFriend = async (req: Request, res: Response) => {
-  try {
-    const userData = await User.findByIdAndUpdate(
-      req.params.id,
-      { $push: { friends: req.params.friendId } },
-      { new: true }
-    );
-    res.json(userData);
-  } catch (err) {
-    res.status(400).json(err);
-  }
-};
+    try {
+      const userData = await User.findByIdAndUpdate(
+        req.params.id,
+        { $push: { friends: req.params.friendId } },
+        { new: true }
+      );
+      res.json({ userData, message: 'Friend added.' });
+    } catch (err) {
+      res.status(400).json(err);
+    }
+  };
 
-export const deleteFriend = async (req: Request, res: Response) => {
-  try {
-    const userData = await User.findByIdAndUpdate(
-      req.params.id,
-      { $pull: { friends: req.params.friendId } },
-      { new: true }
-    );
-    res.json(userData);
-  } catch (err) {
-    res.status(400).json(err);
+ export const deleteFriend = async (req: Request, res: Response) => {
+    try {
+      const userData = await User.findByIdAndUpdate(
+        req.params.id,
+        { $pull: { friends: req.params.friendId } },
+        { new: true }
+      );
+      res.json({userData, message: 'Friend deleted.'});
+    } catch (err) {
+      res.status(400).json(err);
+    }
   }
-};
