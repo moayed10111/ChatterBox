@@ -95,19 +95,19 @@ export const addReaction = async (req: Request, res: Response) => {
 };
 
 export const deleteReaction = async (req: Request, res: Response) => {
-  try {
+try {
     const thoughtData = await Thought.findByIdAndUpdate(
-      { _id: req.params.thoughtId },
-      { $pull: { reactions: { reactionId: req.params.reactionId } } },
-      { new: true }
+        req.params.thoughtId,
+        { $pull: { reactions: { reactionId: req.params.reactionId } } },
+        { new: true }
     ).select("-__v");
-
+    
     if (!thoughtData) {
-      res.status(404).json({ message: "No thought found with this id!" });
-      return;
+        res.status(404).json({ message: "No thought found with this id!" });
+        return;
     }
-    res.json(thoughtData);
-  } catch (err) {
+    res.json({thoughtData, message: 'Reaction deleted.'});
+    } catch (err) {
     res.status(400).json(err);
-  }
-};
+    }   
+}
